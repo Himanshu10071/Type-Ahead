@@ -1,0 +1,123 @@
+version: "3.9"
+
+services:
+  # ── Redis cluster (3 independent nodes for consistent hashing) ─────────────
+  redis-1:
+    image: redis:7-alpine
+    container_name: typeahead-redis-1
+    command: redis-server --save "" --appendonly no --loglevel warning
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - typeahead-net
+
+  redis-2:
+    image: redis:7-alpine
+    container_name: typeahead-redis-2
+    command: redis-server --save "" --appendonly no --loglevel warning
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - typeahead-net
+
+  redis-3:
+    image: redis:7-alpine
+    container_name: typeahead-redis-3
+    command: redis-server --save "" --appendonly no --loglevel warning
+    ports:
+      - "6381:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - typeahead-net
+
+  # ── Backend (Fastify API) ──────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: typeahead-backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      DB_PATH: "/app/data/typeahead.db"
+      REDIS_HOST_1: "redis-1"
+      REDIS_PORT_1: "6379"
+      REDIS_HOST_2: "redis-2"
+      REDIS_PORT_2: "6379"
+      REDIS_HOST_3: "redis-3"
+      REDIS_PORT_3: "6379"
+      BATCH_SIZE: "100"
+      FLUSH_INTERVAL_MS: "5000"
+      CACHE_TTL_SECONDS: "300"
+      TOP_K: "10"
+      TRENDING_N: "10"
+      RECENCY_SCALE: "10000"
+    volumes:
+      # Persist the SQLite database between restarts
+      - typeahead-db:/app/data
+    depends_on:
+      redis-1:
+        condition: service_healthy
+      redis-2:
+        condition: service_healthy
+      redis-3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - typeahead-net
+
+  # ── Frontend (React + Vite) ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: typeahead-frontend
+    ports:
+      - "4173:4173"
+    environment:
+      # In Docker, the browser talks directly to the backend via the exposed port.
+      # The frontend build is static, so VITE_API_URL points to the backend.
+      VITE_API_URL: "http://localhost:3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - typeahead-net
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  typeahead-db:
+    driver: local
+
+# ── Networks ───────────────────────────────────────────────────────────────────
+networks:
+  typeahead-net:
+    driver: bridge

@@ -1,0 +1,25 @@
+{
+  "name": "typeahead-backend",
+  "version": "1.0.0",
+  "description": "Distributed Search Typeahead Backend — Fastify + SQLite + Redis",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "ingest": "ts-node --transpile-only scripts/ingest.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "better-sqlite3": "^11.9.1",
+    "fastify": "^4.28.0",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.12.7",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}
