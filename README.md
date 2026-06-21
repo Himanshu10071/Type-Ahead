@@ -85,20 +85,7 @@ npm install
 npm run dev                       # Vite dev server at http://localhost:5173
 ```
 
-### Docker Compose (full stack)
 
-```bash
-# From the project root:
-docker compose up --build
-
-# The backend must be pre-populated with data.
-# Run ingestion against the mounted volume after the backend starts:
-docker compose exec backend node dist/scripts/ingest.js /path/to/query_count.tsv
-
-# Access the app:
-#   Frontend:    http://localhost:4173
-#   Backend API: http://localhost:3001
-```
 
 ### Environment Variables
 

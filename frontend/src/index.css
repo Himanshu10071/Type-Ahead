@@ -274,6 +274,10 @@ ul, ol { list-style: none; }
   caret-color: var(--accent-3);
   min-width: 0;
 }
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+}
 .search-input::placeholder {
   color: var(--text-muted);
 }

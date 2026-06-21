@@ -68,6 +68,11 @@ export class DatabaseService {
     return this.db.prepare('SELECT * FROM queries ORDER BY count DESC').all() as QueryRow[];
   }
 
+  /** Iterate through every query row — used once on startup to build the trie. */
+  iterateAllQueries(): IterableIterator<QueryRow> {
+    return this.db.prepare('SELECT * FROM queries ORDER BY count DESC').iterate() as IterableIterator<QueryRow>;
+  }
+
   /** Count total rows in the queries table. */
   getQueryCount(): number {
     const row = this.db.prepare('SELECT COUNT(*) as n FROM queries').get() as { n: number };

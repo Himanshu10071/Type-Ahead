@@ -42,12 +42,11 @@ async function main(): Promise<void> {
   // ── 2. Build in-memory trie ────────────────────────────────────────────────
   console.log('[startup] Building trie index (this may take a few seconds for large datasets)…');
   const trie = new Trie(config.topK);
-  const allQueries = db.getAllQueries();
   let loaded = 0;
-  for (const row of allQueries) {
+  for (const row of db.iterateAllQueries()) {
     trie.insert(row.normalized, row.count);
     if (++loaded % 50_000 === 0) {
-      console.log(`[startup] Trie: loaded ${loaded} / ${allQueries.length} entries`);
+      console.log(`[startup] Trie: loaded ${loaded} / ${rowCount} entries`);
     }
   }
   console.log(`[startup] Trie built with ${loaded} entries.`);

@@ -73,9 +73,11 @@ services:
       TOP_K: "10"
       TRENDING_N: "10"
       RECENCY_SCALE: "10000"
+      NODE_OPTIONS: "--max-old-space-size=4096"
     volumes:
       # Persist the SQLite database between restarts
       - typeahead-db:/app/data
+      - ./query_count.tsv:/app/query_count.tsv
     depends_on:
       redis-1:
         condition: service_healthy
@@ -84,7 +86,7 @@ services:
       redis-3:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 10

@@ -7,6 +7,7 @@ RUN npm ci
 
 COPY tsconfig.json ./
 COPY src ./src
+COPY scripts ./scripts
 RUN npm run build
 
 # ── Production image ──────────────────────────────────────────────────────────
@@ -26,6 +27,6 @@ RUN mkdir -p /app/data
 EXPOSE 3001
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 
 CMD ["node", "dist/src/index.js"]
